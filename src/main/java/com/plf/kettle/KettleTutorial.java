@@ -4,15 +4,25 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.pentaho.di.core.KettleEnvironment;
 import org.pentaho.di.core.database.DatabaseMeta;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.plugins.PluginRegistry;
 import org.pentaho.di.core.plugins.StepPluginType;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.core.xml.XMLHandler;
+import org.pentaho.di.job.Job;
+import org.pentaho.di.job.JobHopMeta;
+import org.pentaho.di.job.JobMeta;
+import org.pentaho.di.job.entries.special.JobEntrySpecial;
+import org.pentaho.di.job.entries.success.JobEntrySuccess;
+import org.pentaho.di.job.entries.trans.JobEntryTrans;
+import org.pentaho.di.job.entry.JobEntryCopy;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransHopMeta;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.insertupdate.InsertUpdateMeta;
+import org.pentaho.di.trans.steps.sql.ExecSQLMeta;
 import org.pentaho.di.trans.steps.tableinput.TableInputMeta;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassDef;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassMeta;
@@ -30,6 +40,46 @@ import java.util.Properties;
  * @date 2020/12/8
  */
 public class KettleTutorial {
+
+    @Test
+    public void startJobTest() throws KettleException {
+        KettleEnvironment.init();
+
+        String fileName = "src/main/resources/etl/update_insert_jobs.kjb";
+
+        Document document = XMLHandler.loadXMLFile(fileName);
+        Node root = document.getDocumentElement();
+        JobMeta jobMeta = new JobMeta();
+        jobMeta.loadXML(root,fileName, null, null, true,  null);
+
+
+        Job job = new Job(null, jobMeta);
+        // 向Job 脚本传递参数，脚本中获取参数值：${参数名}
+        // job.setVariable(paraname, paravalue);
+        job.start();
+        job.waitUntilFinished();
+        if (job.getErrors() > 0) {
+            System.out.println("decompress fail!");
+        }
+    }
+
+    /**
+     * 生成Kettle的作业
+     */
+    @Test
+    public void generateCreateJobTest(){
+        try{
+            KettleEnvironment.init();
+            KettleTutorial test =new KettleTutorial();
+            JobMeta jobMeta = test.generateJobs();
+            String jobsXml = jobMeta.getXML();
+            String jobsName = "src/main/resources/etl/update_insert_jobs.kjb";
+            File file = new File(jobsName);
+            FileUtils.writeStringToFile(file, jobsXml, "UTF-8");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
 
     /**
@@ -79,6 +129,46 @@ public class KettleTutorial {
             e.printStackTrace();
             return;
         }
+    }
+
+
+    public JobMeta generateJobs() throws KettleXMLException {
+        JobMeta jobMeta = new JobMeta();
+        jobMeta.setName("job_trans");
+        JobEntrySpecial special = new JobEntrySpecial();
+        special.setName("开始");
+        special.setStart(true);
+        special.setDummy(false);
+        special.setRepeat(false);
+        JobEntryCopy start = new JobEntryCopy(special);
+        start.setDrawn();
+        start.setLocation(144,160);
+
+
+        JobEntryTrans trans = new JobEntryTrans();
+        trans.setName("START");
+        //kjb文件的当前目录
+        trans.setFileName("${Internal.Entry.Current.Directory}/update_insert_trans.ktr");
+        trans.setTransname("update_insert_Trans");
+        JobEntryCopy transCopy = new JobEntryCopy(trans);
+        transCopy.setDrawn();
+        transCopy.setLocation(336,160);
+
+        jobMeta.addJobEntry(start);
+        jobMeta.addJobEntry(transCopy);
+        jobMeta.addJobHop(new JobHopMeta(start,transCopy));
+
+
+        JobEntrySuccess success = new JobEntrySuccess();
+        success.setName("成功");
+        JobEntryCopy successCopy = new JobEntryCopy(success);
+        successCopy.setDrawn();
+        successCopy.setLocation(512,160);
+        jobMeta.addJobEntry(successCopy);
+        jobMeta.addJobHop(new JobHopMeta(transCopy,successCopy));
+
+        jobMeta.setJobstatus(0);
+        return jobMeta;
     }
 
     /**
@@ -203,4 +293,57 @@ public class KettleTutorial {
 
         return transMeta;
     }
+
+    public TransMeta generateSQLTrans(){
+        //设置serverTimeZone
+        Properties properties = new Properties();
+        properties.put("EXTRA_OPTION_MYSQL.serverTimezone","GMT+8");
+        properties.put("EXTRA_OPTION_MYSQL.useSSL","true");
+
+        TransMeta transMeta = new TransMeta();
+        transMeta.setName("data-delete");
+        DatabaseMeta dataMeta =
+                new DatabaseMeta("db1", "MySQL", "Native","localhost", "test", "3600", "root", "root");
+        dataMeta.setAttributes(properties);
+        transMeta.addDatabase(dataMeta);
+
+        //registry是给每个步骤生成一个标识id
+        PluginRegistry registry = PluginRegistry.getInstance();
+
+
+        //第一个表输入步骤(TableInputMeta)
+        TableInputMeta tableInput = new TableInputMeta();
+        String tableInputPluginId = registry.getPluginId(StepPluginType.class, tableInput);
+        //给表输入添加一个DatabaseMeta连接数据库
+        DatabaseMeta database_test = transMeta.findDatabase("db1");
+        tableInput.setDatabaseMeta(database_test);
+        String selectSQL = "SELECT id,id as tid from test_copy";
+        tableInput.setSQL(selectSQL);
+        //添加TableInputMeta到转换中
+        StepMeta tableInputMetaStep =
+                new StepMeta(tableInputPluginId, "table_input",tableInput);
+        //给步骤添加在spoon工具中的显示位置
+        tableInputMetaStep.setDraw(true);
+        tableInputMetaStep.setLocation(144, 160);
+        transMeta.addStep(tableInputMetaStep);
+
+        ExecSQLMeta sqlMeta = new ExecSQLMeta();
+        sqlMeta.setDatabaseMeta(database_test);
+        sqlMeta.setSql("delete from test_copy where id = (select IF((SELECT id from test where id = ?),0,?))");
+        sqlMeta.setArguments(new String[]{"id","tid"});
+        sqlMeta.setExecutedEachInputRow(true);
+        sqlMeta.setVariableReplacementActive(true);
+
+        String sqlMetaId = registry.getPluginId(StepPluginType.class, sqlMeta);
+        StepMeta sqlMetaStep =
+                new StepMeta(sqlMetaId, "sql_op_delete",sqlMeta);
+        //给步骤添加在spoon工具中的显示位置
+        sqlMetaStep.setDraw(true);
+        sqlMetaStep.setLocation(288, 160);
+        transMeta.addStep(sqlMetaStep);
+        //添加hop把两个步骤关联起来
+        transMeta.addTransHop(new TransHopMeta(tableInputMetaStep, sqlMetaStep));
+        return transMeta;
+    }
+
 }
