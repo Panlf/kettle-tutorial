@@ -1,6 +1,5 @@
 package com.plf.kettle.op;
 
-import com.plf.kettle.base.KettleTutorial;
 import org.apache.commons.io.FileUtils;
 import org.pentaho.di.core.KettleEnvironment;
 import org.pentaho.di.core.database.DatabaseMeta;
