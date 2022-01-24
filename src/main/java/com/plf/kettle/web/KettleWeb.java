@@ -5,7 +5,8 @@ import org.pentaho.di.core.KettleEnvironment;
 
 public class KettleWeb {
     public static void main(String[] args) throws Exception {
-        //nohup ./carte.sh 0.0.0.0  8081 &
+        //nohup ./carte.sh 0.0.0.0  8081 &   // Linux 下面的启动命令
+        // ./carte.bat 0.0.0.0  8081    //Windows下面的启动命令
         KettleEnvironment.init();
         SlaveServer slaveServer = new SlaveServer();
         slaveServer.setName("slave1");
