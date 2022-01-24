@@ -39,84 +39,59 @@ public class DispatchKettleWeb {
         }
     }
 
-    /**
-     * 执行job
-     */
-    @Test
-    public void executeOnceJob(){
-        try {
-            InputStream ktrInputStream = new FileInputStream(kettleXMLDirectory+"\\op_data_trans.ktr");
-            startTrans(ktrInputStream);
-        } catch (FileNotFoundException e) {
-            System.out.println("读取文件失败,错误是===>"+e.getMessage());
-            e.printStackTrace();
-        } catch (Exception e){
-            System.out.println("执行KJB文件失败,错误是===>"+e.getMessage());
-        }
-    }
+
 
 
     /**
-     * 获取运行的job
+     * 获取作业的状态
      */
     @Test
-    public void getStatus(){
+    public void getJobStatus(){
         try {
             //只能获取运行的任务
             List<SlaveServerJobStatus> jobStatusList =  slaveServer.getStatus().getJobStatusList();
-            System.out.println(jobStatusList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * 获取job日志
-     */
-    @Test
-    public void getJobLog(){
-        try {
-            SlaveServerTransStatus slaveServerTransStatus =  slaveServer
-                    .getTransStatus("tran_data_op_test",
-                            "9ebcd353-86c7-463e-8c1e-397d4a533def",
-                            1);
-
-            System.out.println(slaveServerTransStatus.getLoggingString());
+            //获取作业的状态
+            jobStatusList.forEach(
+                    x-> System.out.println(x.getStatusDescription())
+            );
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
+
+
     /**
-     * 停止job
+     * 停止作业
      */
     @Test
     public void stopJob(){
         try {
-            slaveServer.stopJob("tran_data_op_test",
-                    "9ebcd353-86c7-463e-8c1e-397d4a533def");
+            slaveServer.stopJob("",
+                    "");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
     /**
-     * 删除job
+     * 删除作业
      */
     @Test
     public void removeJob(){
         try {
-            slaveServer.removeJob("tran_data_op_test",
-                    "9ebcd353-86c7-463e-8c1e-397d4a533def");
+            slaveServer.removeJob("",
+                    "");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    //===================================== Trans 转换 =====================================
     /**
-     * 执行job
+     * 执行转换
      * @param ktrInputStream
      * @return
      * @throws Exception
@@ -141,4 +116,52 @@ public class DispatchKettleWeb {
         }
     }
 
+    /**
+     * 获取转换日志
+     */
+    @Test
+    public void getTransLog(){
+        try {
+            SlaveServerTransStatus slaveServerTransStatus =  slaveServer
+                    .getTransStatus("tran_data_op_test",
+                            "9ebcd353-86c7-463e-8c1e-397d4a533def",
+                            1);
+
+            System.out.println(slaveServerTransStatus.getLoggingString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 获取Trans的状态
+     */
+    @Test
+    public void getTransStatus(){
+        try {
+            List<SlaveServerTransStatus> transStatusList = slaveServer.getStatus().getTransStatusList();
+            //获取转换的
+            transStatusList.forEach(
+                    x-> System.out.println(x.getStatusDescription())
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 执行Trans
+     */
+    @Test
+    public void executeOnceTrans(){
+        try {
+            InputStream ktrInputStream = new FileInputStream(kettleXMLDirectory+"\\op_data_trans.ktr");
+            startTrans(ktrInputStream);
+        } catch (FileNotFoundException e) {
+            System.out.println("读取文件失败,错误是===>"+e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e){
+            System.out.println("执行KJB文件失败,错误是===>"+e.getMessage());
+        }
+    }
 }
