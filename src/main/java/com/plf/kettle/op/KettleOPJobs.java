@@ -54,6 +54,8 @@ public class KettleOPJobs {
         sourceDataMeta.setDBPort("3306");
         transMeta.addDatabase(sourceDataMeta);
 
+
+        properties.setProperty("EXTRA_OPTION_MYSQL.rewriteBatchedStatements","true");
         DatabaseMeta targetDataMeta =
                 new DatabaseMeta("test", "MySQL", "Native","localhost", "test", "3306", "root", "root");
         targetDataMeta.setDBPort("3306");
