@@ -49,6 +49,9 @@ public class DispatchKettleWeb {
         }
     }
 
+
+
+
     /**
      * 将KJB内容发布到kettle服务器上执行。
      * @param jobName
@@ -206,9 +209,9 @@ public class DispatchKettleWeb {
     public void getTransLog(){
         try {
             SlaveServerTransStatus slaveServerTransStatus =  slaveServer
-                    .getTransStatus("tran_data_op_test",
-                            "9ebcd353-86c7-463e-8c1e-397d4a533def",
-                            1);
+                    .getTransStatus("tran_data_test",
+                            "35f6a22b-92f3-4574-9a75-0bdb7cd7bb10",
+                            2);
 
             System.out.println(slaveServerTransStatus.getLoggingString());
         } catch (Exception e) {
@@ -238,8 +241,24 @@ public class DispatchKettleWeb {
     @Test
     public void executeOnceTrans(){
         try {
-            InputStream ktrInputStream = new FileInputStream(kettleXMLDirectory+"\\op_data_trans.ktr");
+            InputStream ktrInputStream = new FileInputStream("update_insert_trans.ktr");
             startTrans(ktrInputStream);
+        } catch (FileNotFoundException e) {
+            System.out.println("读取文件失败,错误是===>"+e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e){
+            System.out.println("执行KJB文件失败,错误是===>"+e.getMessage());
+        }
+    }
+
+    /**
+     * 启动Job
+     */
+    @Test
+    public void executeJob(){
+        try {
+            InputStream ktrInputStream = new FileInputStream("update_insert_trans_interval.kjb");
+            startJob(ktrInputStream);
         } catch (FileNotFoundException e) {
             System.out.println("读取文件失败,错误是===>"+e.getMessage());
             e.printStackTrace();

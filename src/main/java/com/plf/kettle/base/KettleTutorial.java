@@ -81,6 +81,21 @@ public class KettleTutorial {
         }
     }
 
+    @Test
+    public void generateCreateIntervalJobTest(){
+        try{
+            KettleEnvironment.init();
+            KettleTutorial test =new KettleTutorial();
+            JobMeta jobMeta = test.generateIntervalJobs();
+            String jobsXml = jobMeta.getXML();
+            String jobsName = "src/main/resources/etl/update_insert_trans_interval.kjb";
+            File file = new File(jobsName);
+            FileUtils.writeStringToFile(file, jobsXml, "UTF-8");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * 启动Kettle交换任务
@@ -132,11 +147,56 @@ public class KettleTutorial {
     }
 
 
+    public JobMeta generateIntervalJobs() throws KettleXMLException {
+        JobMeta jobMeta = new JobMeta();
+        jobMeta.setName("job_trans");
+
+        JobEntrySpecial special = new JobEntrySpecial();
+        // START名字固定
+        special.setName("START");
+        special.setStart(true);
+        special.setDummy(false);
+        //重复
+        special.setRepeat(true);
+        //时间间隔模式
+        special.setSchedulerType(JobEntrySpecial.INTERVAL);
+        //定时1分钟
+        special.setIntervalMinutes(1);
+        JobEntryCopy start = new JobEntryCopy(special);
+        start.setDrawn();
+        start.setLocation(144,160);
+
+        JobEntryTrans trans = new JobEntryTrans();
+        trans.setName("转换");
+        //kjb文件的当前目录
+        trans.setFileName("${Internal.Entry.Current.Directory}/update_insert_trans.ktr");
+        trans.setTransname("update_insert_trans");
+        JobEntryCopy transCopy = new JobEntryCopy(trans);
+        transCopy.setDrawn();
+        transCopy.setLocation(336,160);
+        jobMeta.addJobEntry(start);
+        jobMeta.addJobEntry(transCopy);
+        jobMeta.addJobHop(new JobHopMeta(start,transCopy));
+
+
+        JobEntrySuccess success = new JobEntrySuccess();
+        success.setName("成功");
+        JobEntryCopy successCopy = new JobEntryCopy(success);
+        successCopy.setDrawn();
+        successCopy.setLocation(512,160);
+        jobMeta.addJobEntry(successCopy);
+        jobMeta.addJobHop(new JobHopMeta(transCopy,successCopy));
+
+        jobMeta.setJobstatus(0);
+        return jobMeta;
+    }
+
     public JobMeta generateJobs() throws KettleXMLException {
         JobMeta jobMeta = new JobMeta();
         jobMeta.setName("job_trans");
         JobEntrySpecial special = new JobEntrySpecial();
-        special.setName("开始");
+        // START名字固定
+        special.setName("START");
         special.setStart(true);
         special.setDummy(false);
         special.setRepeat(false);
@@ -146,14 +206,13 @@ public class KettleTutorial {
 
 
         JobEntryTrans trans = new JobEntryTrans();
-        trans.setName("START");
+        trans.setName("转换");
         //kjb文件的当前目录
         trans.setFileName("${Internal.Entry.Current.Directory}/update_insert_trans.ktr");
         trans.setTransname("update_insert_Trans");
         JobEntryCopy transCopy = new JobEntryCopy(trans);
         transCopy.setDrawn();
         transCopy.setLocation(336,160);
-
         jobMeta.addJobEntry(start);
         jobMeta.addJobEntry(transCopy);
         jobMeta.addJobHop(new JobHopMeta(start,transCopy));
@@ -179,7 +238,7 @@ public class KettleTutorial {
 
         //设置serverTimeZone
         Properties properties = new Properties();
-        properties.put("EXTRA_OPTION_MYSQL.serverTimezone","GMT+8");
+        properties.put("EXTRA_OPTION_MYSQL.serverTimezone","Asia/Shanghai");
         properties.put("EXTRA_OPTION_MYSQL.useSSL","true");
 
         TransMeta transMeta = new TransMeta();
