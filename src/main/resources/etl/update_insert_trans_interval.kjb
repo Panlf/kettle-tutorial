@@ -1,26 +1,25 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <job>
   <name>job_trans</name>
-  <description />
-  <extended_description />
-  <job_version />
+  <description/>
+  <extended_description/>
+  <job_version/>
   <job_status>0</job_status>
   <directory>/</directory>
   <created_user>-</created_user>
-  <created_date>2020/12/22 15:51:32.490</created_date>
+  <created_date>2022/08/19 10:43:16.665</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2020/12/22 15:51:32.490</modified_date>
+  <modified_date>2022/08/19 10:43:16.665</modified_date>
   <parameters>
     </parameters>
   <slaveservers>
     </slaveservers>
   <job-log-table>
-    <connection />
-    <schema />
-    <table />
-    <size_limit_lines />
-    <interval />
-    <timeout_days />
+    <connection/>
+    <schema/>
+    <table/>
+    <size_limit_lines/>
+    <interval/>
+    <timeout_days/>
     <field>
       <id>ID_JOB</id>
       <enabled>Y</enabled>
@@ -128,10 +127,10 @@
     </field>
   </job-log-table>
   <jobentry-log-table>
-    <connection />
-    <schema />
-    <table />
-    <timeout_days />
+    <connection/>
+    <schema/>
+    <table/>
+    <timeout_days/>
     <field>
       <id>ID_BATCH</id>
       <enabled>Y</enabled>
@@ -219,10 +218,10 @@
     </field>
   </jobentry-log-table>
   <channel-log-table>
-    <connection />
-    <schema />
-    <table />
-    <timeout_days />
+    <connection/>
+    <schema/>
+    <table/>
+    <timeout_days/>
     <field>
       <id>ID_BATCH</id>
       <enabled>Y</enabled>
@@ -285,18 +284,19 @@
     </field>
   </channel-log-table>
   <pass_batchid>N</pass_batchid>
-  <shared_objects_file />
+  <shared_objects_file/>
   <entries>
     <entry>
-      <name>开始</name>
-      <description />
+      <name>START</name>
+      <description/>
       <type>SPECIAL</type>
+      <attributes/>
       <start>Y</start>
       <dummy>N</dummy>
       <repeat>Y</repeat>
-      <schedulerType>0</schedulerType>
+      <schedulerType>1</schedulerType>
       <intervalSeconds>0</intervalSeconds>
-      <intervalMinutes>5</intervalMinutes>
+      <intervalMinutes>1</intervalMinutes>
       <hour>12</hour>
       <minutes>0</minutes>
       <weekDay>1</weekDay>
@@ -306,58 +306,61 @@
       <nr>0</nr>
       <xloc>144</xloc>
       <yloc>160</yloc>
+      <attributes_kjc/>
     </entry>
     <entry>
-      <name>START</name>
-      <description />
+      <name>转换</name>
+      <description/>
       <type>TRANS</type>
+      <attributes/>
       <specification_method>filename</specification_method>
-      <trans_object_id />
-      <filename>${Internal.Entry.Current.Directory}/update_insert_trans.ktr</filename>
-      <transname>update_insert_Trans</transname>
+      <trans_object_id/>
+      <filename>C:/Data/CodeProject/kettle-tutorial/src/main/resources/etl/update_insert_trans.ktr</filename>
+      <transname>update_insert_trans</transname>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
       <exec_per_row>N</exec_per_row>
       <clear_rows>N</clear_rows>
       <clear_files>N</clear_files>
       <set_logfile>N</set_logfile>
-      <logfile />
-      <logext />
+      <logfile/>
+      <logext/>
       <add_date>N</add_date>
       <add_time>N</add_time>
       <loglevel>Basic</loglevel>
       <cluster>N</cluster>
-      <slave_server_name />
+      <slave_server_name/>
       <set_append_logfile>N</set_append_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <follow_abort_remote>N</follow_abort_remote>
       <create_parent_folder>N</create_parent_folder>
       <logging_remote_work>N</logging_remote_work>
-      <run_configuration />
-      <parameters>
-        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>
+      <run_configuration/>
+      <suppress_result_data>N</suppress_result_data>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>336</xloc>
       <yloc>160</yloc>
+      <attributes_kjc/>
     </entry>
     <entry>
       <name>成功</name>
-      <description />
+      <description/>
       <type>SUCCESS</type>
+      <attributes/>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>512</xloc>
       <yloc>160</yloc>
+      <attributes_kjc/>
     </entry>
   </entries>
   <hops>
     <hop>
-      <from>开始</from>
-      <to>START</to>
+      <from>START</from>
+      <to>转换</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -365,7 +368,7 @@
       <unconditional>Y</unconditional>
     </hop>
     <hop>
-      <from>START</from>
+      <from>转换</from>
       <to>成功</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
@@ -376,4 +379,5 @@
   </hops>
   <notepads>
   </notepads>
+  <attributes/>
 </job>
