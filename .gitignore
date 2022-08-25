@@ -25,3 +25,7 @@ hs_err_pid*
 .idea/*
 target/*
 *.iml
+
+# test
+src/test/
+

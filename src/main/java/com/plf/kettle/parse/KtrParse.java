@@ -1,7 +1,10 @@
 package com.plf.kettle.parse;
 
-import com.alibaba.fastjson.JSONObject;
-import groovy.json.JsonOutput;
+import com.alibaba.druid.DbType;
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlSchemaStatVisitor;
+import com.alibaba.druid.util.JdbcConstants;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -28,12 +31,25 @@ import java.util.Map;
 public class KtrParse {
 
     private final static SAXReader saxReader = new SAXReader();
+    private final DbType dbType = JdbcConstants.MYSQL;
+
+    @Test
+    public void testSQL(){
+        String sql = "select id,update_time,ywid,xm,op from biz_06063006_xc_smdyd_jbxx a INNER JOIN" +
+                " (select max(id) maxid from biz_06063006_xc_smdyd_jbxx where id > ? GROUP BY ywid,xm)";
+        List<SQLStatement> stmtList = SQLUtils.parseStatements(sql, dbType);
+        SQLStatement sqlStatement = stmtList.get(0);
+        MySqlSchemaStatVisitor visitor = new MySqlSchemaStatVisitor();
+        sqlStatement.accept(visitor);
+        System.out.println(visitor.getTables());
+    }
 
     @Test
     public void test() throws Exception {
         KettleEnvironment.init();
 
         String path = "C:\\Users\\Breeze\\Desktop\\1.ktr";
+
         FileInputStream fileInputStream = new FileInputStream(path);
 
         byte[] bytes = cloneInputStream(fileInputStream);
@@ -64,13 +80,15 @@ public class KtrParse {
                 String fromXml = transHopMeta.getFromStep().getXML();
                 chainDto.setStartName(fromName);
                 chainDto.setStartTableInfo(getTableInfo(fromXml));
-                chainDto.setStartDbInfo(connectionMap.get(getConnectionName(fromXml)));
+                //若获取为null 为了不影响后续使用new一个空对象进去
+                chainDto.setStartDbInfo(connectionMap.get(getConnectionName(fromXml)) == null ? new DbInfo() :  connectionMap.get(getConnectionName(fromXml)));
 
                 String toName = new String(transHopMeta.getToStep().getName().getBytes(StandardCharsets.UTF_8));
                 String toXml = transHopMeta.getToStep().getXML();
                 chainDto.setEndName(toName);
                 chainDto.setEndTableInfo(getTableInfo(toXml));
-                chainDto.setEndDbInfo(connectionMap.get(getConnectionName(toXml)));
+                //若获取为null 为了不影响后续使用new一个空对象进去
+                chainDto.setEndDbInfo(connectionMap.get(getConnectionName(toXml)) == null ? new DbInfo() :  connectionMap.get(getConnectionName(toXml)));
                 chainDtoList.add(chainDto);
             }
         }
@@ -83,16 +101,18 @@ public class KtrParse {
     public static String getTableInfo(String xml) throws DocumentException {
         Element root = getRootElement(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
 
-        //TableInput  TableOutput  SwitchCase  InsertUpdate  Delete
+        //TableInput  TableOutput  SwitchCase  InsertUpdate  Delete ExecSQL
         String type = root.elementText("type");
         String result = "";
 
-        if (type.equalsIgnoreCase("TableInput")) {
+        if (type.equalsIgnoreCase("TableInput") || type.equalsIgnoreCase("ExecSQL")) {
             result = root.elementText("sql");
         } else if (type.equalsIgnoreCase("TableOutput")) {
             result = root.elementText("table");
         } else if (type.equalsIgnoreCase("InsertUpdate") || type.equalsIgnoreCase("Delete")) {
             result = root.element("lookup").elementText("table");
+        }  else {
+            System.out.println(type);
         }
         return result;
     }
@@ -130,7 +150,7 @@ public class KtrParse {
         return map;
     }
 
-    private static byte[] cloneInputStream(InputStream input) throws Exception {
+    public static byte[] cloneInputStream(InputStream input) throws Exception {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int len;
