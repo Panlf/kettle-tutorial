@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.pentaho.di.core.KettleEnvironment;
 import org.pentaho.di.core.database.DatabaseMeta;
+import org.pentaho.di.core.encryption.Encr;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.plugins.PluginRegistry;
@@ -40,6 +41,12 @@ import java.util.Properties;
  * @date 2020/12/8
  */
 public class KettleTutorial {
+
+    @Test
+    public void decodePassword() throws KettleException {
+        KettleEnvironment.init();
+        System.out.println( Encr.decryptPassword(""));
+    }
 
     @Test
     public void startJobTest() throws KettleException {
