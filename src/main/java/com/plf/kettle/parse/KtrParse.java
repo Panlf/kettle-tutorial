@@ -35,8 +35,8 @@ public class KtrParse {
 
     @Test
     public void testSQL(){
-        String sql = "select id,update_time,ywid,xm,op from biz_06063006_xc_smdyd_jbxx a INNER JOIN" +
-                " (select max(id) maxid from biz_06063006_xc_smdyd_jbxx where id > ? GROUP BY ywid,xm)";
+        String sql = "select id from test a INNER JOIN" +
+                " (select max(id) maxid from test1 where id > ? GROUP BY xh,xm)";
         List<SQLStatement> stmtList = SQLUtils.parseStatements(sql, dbType);
         SQLStatement sqlStatement = stmtList.get(0);
         MySqlSchemaStatVisitor visitor = new MySqlSchemaStatVisitor();
