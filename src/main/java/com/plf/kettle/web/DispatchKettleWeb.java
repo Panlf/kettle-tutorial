@@ -142,11 +142,24 @@ public class DispatchKettleWeb {
 
             //获取作业的状态
             jobStatusList.forEach(
-                    x-> System.out.println(x.getStatusDescription())
+                    x-> {
+                        //获取状态
+                        //System.out.println(x.getStatusDescription());
+                        System.out.println(x.getId());
+                        System.out.println(x.getJobName());
+                        // System.out.println(x.getResult()); //null
+                    }
             );
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void getJobLog() throws Exception {
+        System.out.println(slaveServer.getJobStatus("insert",
+                "99102801-c385-4550-9c1f-9f7d29ddf471",
+                0).getLoggingString());
     }
 
     /**
@@ -257,8 +270,8 @@ public class DispatchKettleWeb {
     @Test
     public void executeJob(){
         try {
-            InputStream ktrInputStream = new FileInputStream("update_insert_trans_interval.kjb");
-            startJob(ktrInputStream);
+            InputStream ktrInputStream = new FileInputStream("C:\\Data\\Soft\\Kettle\\kettlexml\\insert.kjb");
+            System.out.println(startJob(ktrInputStream));
         } catch (FileNotFoundException e) {
             System.out.println("读取文件失败,错误是===>"+e.getMessage());
             e.printStackTrace();
