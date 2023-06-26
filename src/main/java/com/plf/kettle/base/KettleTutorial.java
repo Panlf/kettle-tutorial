@@ -45,7 +45,7 @@ public class KettleTutorial {
     @Test
     public void decodePassword() throws KettleException {
         KettleEnvironment.init();
-        System.out.println( Encr.decryptPassword(""));
+        System.out.println( Encr.decryptPassword("4971334998f9c2b851cb9ab4f9499674daa4ea9e"));
     }
 
     @Test
