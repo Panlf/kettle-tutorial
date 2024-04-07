@@ -10,7 +10,9 @@ public class ChainDto {
     private String startName;
     private String startTableInfo;
     private DbInfo startDbInfo;
+    private String startType;
     private String endName;
+    private String endType;
     private DbInfo endDbInfo;
     private String endTableInfo;
 }
