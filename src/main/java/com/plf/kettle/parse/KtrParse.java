@@ -6,8 +6,6 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlSchemaStatVisitor;
 import com.alibaba.druid.util.JdbcConstants;
 import com.alibaba.fastjson.JSON;
-import com.sun.net.httpserver.Filter;
-import net.sf.ehcache.concurrent.Sync;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
