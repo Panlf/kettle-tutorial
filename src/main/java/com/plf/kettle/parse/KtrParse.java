@@ -39,9 +39,7 @@ public class KtrParse {
     private final static SAXReader saxReader = new SAXReader();
     private final DbType dbType = JdbcConstants.MYSQL;
     private final String maxIDPattern= "select\\s+ifnull\\(max\\(.*\\),0\\)\\s+from\\s.*";
-    private final String updateSync = "update\\s+.*set\\s+is_sync=1\\s+where.*";
     Pattern maxIDPatternInstance = Pattern.compile(maxIDPattern);
-    Pattern updateSyncInstance = Pattern.compile(updateSync);
     @Test
     public void testSQL(){
         String text = "selEct   iFnUll(max(id),0)    from   test11";
@@ -64,20 +62,15 @@ public class KtrParse {
     public void test() throws Exception {
         KettleEnvironment.init();
 
-        String path = "C:\\Users\\Breeze\\Desktop\\5.xml";
+        String path = "5.xml";
 
         FileInputStream fileInputStream = new FileInputStream(path);
         byte[] bytes = cloneInputStream(fileInputStream);
         List<ChainDto> chainDtoList = getChainName(bytes);
 
         // System.out.println(JSON.toJSONString(chainDtoList));
-        // 前置库 -> 共享 链路 解析
         //System.out.println(JSON.toJSONString(parseSwitchCaseChain(chainDtoList)));
-
-        // 前置库  ->  绍兴开放
         System.out.println(JSON.toJSONString(parseIfMaxId(chainDtoList)));
-
-        // 前置库 -> 开发 -> 省开发
 
 
         // System.out.println(chainDtoList);
@@ -98,9 +91,7 @@ public class KtrParse {
         for(ChainDto chainDto:chainDtoList){
             //现在一种链路是增量传输，所以会计算目标表的最大主键ID，对数据链路来说，其实这段链路无意义
             String startSql = chainDto.getStartTableInfo();
-            String endSql = chainDto.getEndTableInfo();
-            if(!maxIDPatternInstance.matcher(startSql).find() &&
-                    !updateSyncInstance.matcher(endSql).find() ){
+            if(!maxIDPatternInstance.matcher(startSql).find()){
                 SyncChain syncChain = new SyncChain();
 
                 syncChain.setStartDataBase(chainDto.getStartDbInfo().getDatabase());
